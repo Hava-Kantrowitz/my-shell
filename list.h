@@ -1,6 +1,9 @@
 #ifndef LIST_H
 #define LIST_H
 
+//Note: Attribution: The list structure is created by Nat Tuck in 
+//class lecture notes, CS3650, Spring 2020
+
 typedef struct list {
 	int size;
 	char* head;

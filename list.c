@@ -1,4 +1,5 @@
-/* This file is lecture notes from CS 3650, Fall 2018 */
+/* NOTE: ATTRIBUTION: This list structure is from Nat Tuck, in class notes
+ * This file is lecture notes from CS 3650, Spring 2020 */
 /* Author: Nat Tuck */
 
 #include <string.h>
@@ -39,22 +40,6 @@ length(list* alist) {
 	for (; alist; alist = alist->tail) {
 		length++;
 	}
-}
-
-list*
-reverse(list* alist) {
-	list* rev_list = 0;
-	for (; alist; alist = alist->tail) {
-		rev_list = cons(alist->head, rev_list);
-	}
-	return rev_list;
-}
-
-list* 
-rev_free(list* alist) {
-	list* rev_list = reverse(alist);
-	free(alist);
-	return rev_list;
 }
 
 

@@ -1,6 +1,7 @@
 SRCS := $(wildcard *.c)
 OBJS := $(SRCS:.c=.o)
 HDRS := $(wildcard *.h)
+PLS := $(wildcard *.plist)
 
 tokens: $(OBJS)
 	gcc -g -o $@ $(OBJS)
@@ -9,7 +10,7 @@ tokens: $(OBJS)
 	gcc -c -g -o $@ $<
 
 clean:
-	rm -rf tokens $(OBJS)
+	rm -rf tokens $(OBJS) $(PLS)
 
 .PHONY: clean
 
