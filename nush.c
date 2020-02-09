@@ -27,7 +27,7 @@ printToFile(char* args[]) {
 		}
 
 		else {
-			char* file = args[j+2]; 
+			char* file = args[j+2];
 			int fd = open(file, O_CREAT | O_TRUNC | O_WRONLY, 0644);
 			close(1);
 			dup(fd);
@@ -39,19 +39,36 @@ printToFile(char* args[]) {
 }
 
 int
-getFromFile(char* args[]) {
-	return 0;
-}
+pipeIn(char* args[]) {
+	int rv;
+	int pipe_fds[2];
 
-int
-pipeInput(char* args[]) {
-	return 0;
+	int p_read = pipe_fds[0];
+	int p_write = pipe_fds[1];
+	int cpid; 
+
+	if ((cpid = fork())) {
+		//this is parent
+		close(p_read);
+		char msg[] = "Hello, pipe. \n";
+		write(p_write, msg, strlen(msg));
+	}
+	else {
+		close(p_write);
+		char temp[100];
+		rv = read(p_read, temp, 100);
+		temp[rv] = 0;
+
+		write(1, temp, strlen(temp));
+	}
+
+	return 0; 
 }
 
 void
 execute(char* cmd)
 {
-    int cpid;
+    int cpid; 
 
     if ((cpid = fork())) {
 
@@ -71,6 +88,9 @@ execute(char* cmd)
 	int i = 0;
 	int hasSemi = 0; 
 	int hasRedirOut = 0;
+	int hasRedirIn = 0;
+	int hasPipe = 0;
+	int hasBackground = 0; 
 	for (; tokens; tokens = tokens->tail) {
 		args[i] = tokens->head;
 		if (*args[i] == ';') {
@@ -79,28 +99,32 @@ execute(char* cmd)
 		if (*args[i] == '>') {
 			hasRedirOut = 1;
 		}
+
+		if (*args[i] == '|') {
+			hasPipe = 1;
+		}
 		i++;
 	}
 
 	args[i] = NULL;
-	if (hasSemi) {
-		//handle the semicolon
+	if (hasPipe) {
+		pipeIn(args); 
 	}
 
-	if (hasRedirOut) {
+	else if (hasBackground) {
+		//background code
+	}
+
+	else if (hasRedirOut) {
 		printToFile(args); 
 	}
 
-	if (hasRedirIn) {
-		//getFromFile(args);
-	}
-
-	if (hasPipe) {
-		pipeInput(args);
-	}
-
-	if (hasBackground) {
-		//background(args);
+	/*if (hasPipe) {
+		//pipeIn(args);
+	}*/
+	
+	else {
+		execvp(args[0], args);
 	}
 
 
@@ -111,9 +135,12 @@ execute(char* cmd)
 
         //printf("== executed program's output: ==\n");
 
-	else {
+	/*else {
+		printf("why am I suddenly getting here\n"); 
 	execvp(args[0], args);
-	}
+	}*/
+
+	
 
     }
 }
