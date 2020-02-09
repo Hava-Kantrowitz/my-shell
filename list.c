@@ -42,4 +42,19 @@ length(list* alist) {
 	}
 }
 
+list*
+reverse(list* alist) {
+	list* new_list = 0;
+	for (; alist; alist = alist->tail) {
+		new_list = cons(alist->head, new_list);
+	}
 
+	return new_list;
+}
+
+list*
+rev_free(list* alist) {
+	list* new_list = reverse(alist);
+	free_list(alist);
+	return new_list;
+}

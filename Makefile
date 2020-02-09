@@ -1,16 +1,24 @@
+
+BIN  := nush
 SRCS := $(wildcard *.c)
 OBJS := $(SRCS:.c=.o)
-HDRS := $(wildcard *.h)
-PLS := $(wildcard *.plist)
 
-tokens: $(OBJS)
-	gcc -g -o $@ $(OBJS)
+CFLAGS := -g
+LDLIBS :=
 
-%.o: %.c $(HDRS)
-	gcc -c -g -o $@ $<
+$(BIN): $(OBJS)
+	$(CC) -o $@ $(OBJS) $(LDLIBS)
+
+%.o : %.c $(wildcard *.h)
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -rf tokens $(OBJS) $(PLS)
+	rm -rf *.o $(BIN) tmp *.plist valgrind.out main.out
 
-.PHONY: clean
+test: $(BIN)
+	perl test.pl
 
+valgrind: $(BIN)
+	valgrind -q --leak-check=full --log-file=valgrind.out ./$(BIN)
+
+.PHONY: clean test

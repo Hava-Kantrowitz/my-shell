@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "list.h"
+#include "tokens.h"
 
 int
 still_word(const char* line, int index, int inner) {
@@ -67,12 +68,14 @@ tokenize(const char* line) {
 			continue;
 		}
 
-		if(ispunct(line[index]) && line[index] != '-') {
+		if(ispunct(line[index]) && line[index] != '/' 
+				&& ispunct(line[index]) && line[index] != '-') {
 			char* punc_token = read_punct(line, index);
 			alist = cons(punc_token, alist);
 			index += strlen(punc_token);
 			free(punc_token);
 		}
+
 
 			char* token = read_command(line, index);
 			alist = cons(token, alist);
@@ -81,27 +84,7 @@ tokenize(const char* line) {
 		
 	}
 
-	return alist;
-}
+	list* token_list = rev_free(alist);
 
-
-int 
-main(int _ac, char** _av) {
-	char line[100];
-	while (1) {
-
-	  printf("tokens$ ");
-	  fflush(stdout);
-	  char* input = fgets(line, 96, stdin);
-     	  if (!input) {
-		  printf("\n");
-		  break;
-	  }
-     	
-	  list* tokens  = tokenize(line);
-
-	  print_list(tokens); 
-	  free(tokens);
-
-	}
+	return token_list;
 }
