@@ -20,7 +20,8 @@ still_word(const char* line, int index, int inner) {
 	else if (ispunct(line[index + inner])) {
 		if(line[index + inner] == '.' || line[index + inner] == '/'
 				|| line[index + inner] == '_' 
-				|| line[index + inner] == '-') {
+				|| line[index + inner] == '-'
+				|| line[index + inner] == '~') {
 			return isWord;
 		}
 		isWord = 0;
@@ -69,7 +70,8 @@ tokenize(const char* line) {
 		}
 
 		if(ispunct(line[index]) && line[index] != '/' 
-				&& ispunct(line[index]) && line[index] != '-') {
+				&& ispunct(line[index]) && line[index] != '-'
+				&& ispunct(line[index]) && line[index] != '~') {
 			char* punc_token = read_punct(line, index);
 			alist = cons(punc_token, alist);
 			index += strlen(punc_token);
