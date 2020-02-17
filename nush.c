@@ -191,11 +191,11 @@ execute(ast* ast) {
 	if (*ast->op == '&') {
 		int newpid;
 		if((newpid = fork())) {
-			char** first = ast_eval(ast->left);
+			char** first = ast_eval(ast->right);
 			execvp(first[0], first);
 		}
 		else {
-			char** second = ast_eval(ast->right);
+			char** second = ast_eval(ast->left);
 			execvp(second[0], second);
 		}
 	}
@@ -260,7 +260,6 @@ main(int argc, char* argv[])
         fgets(cmd, 256, stdin);
 	list* toks = tokenize(cmd);
 	ast* my_ast = parse(toks);
-//	print_ast(my_ast); 
 	execute(my_ast); 
     }
     else {

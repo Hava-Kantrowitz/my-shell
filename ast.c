@@ -17,7 +17,6 @@ make_ast_value(list* vv) {
 	ast->right = 0;
 	ast->left = 0;
 	ast->val = calloc(length(vv), sizeof(char*));
-	// llop thru vv, val[i] = strdup(it->head);
 	ast->len = length(vv);
 	int i = 0;
 	for (; vv; vv = vv->tail) {
