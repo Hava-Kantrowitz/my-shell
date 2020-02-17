@@ -40,6 +40,8 @@ length(list* alist) {
 	for (; alist; alist = alist->tail) {
 		length++;
 	}
+
+	return length; 
 }
 
 list*

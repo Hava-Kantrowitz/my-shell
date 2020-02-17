@@ -76,6 +76,7 @@ tokenize(const char* line) {
 			alist = cons(punc_token, alist);
 			index += strlen(punc_token);
 			free(punc_token);
+			continue; 
 		}
 
 
