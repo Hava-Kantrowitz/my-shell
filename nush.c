@@ -20,42 +20,23 @@
 
 int
 getFromFile(char** firstArgs, char** secondArgs) {
-	int new_pid; 
-	
-	if ((new_pid = fork())) {
-		int status;
-		waitpid(new_pid, &status, 0);
-	}
-
-	else {
-		char* file = firstArgs[0];
-		int fd = open(file, O_RDONLY);
-		close(0);
-		dup(fd);
-		close(fd);
-		execvp(secondArgs[0], secondArgs); 
-	}
-	return 0;
+	char* file = firstArgs[0];
+	int fd = open(file, O_RDONLY);
+	close(0);
+	dup(fd);
+	execvp(secondArgs[0], secondArgs); 
+	return -1;
 } 
 
 int
 printToFile(char** firstArgs, char** secondArgs) {
-		int new_pid;
-
-		if ((new_pid = fork())) {
-			int status;
-			waitpid(new_pid, &status, 0);
-		}
-
-		else {
-			char* file = firstArgs[0];
-			int fd = open(file, O_CREAT | O_TRUNC | O_WRONLY, 0644);
-			close(1);
-			dup(fd);
-			close(fd); 
-			execvp(secondArgs[0], secondArgs); 
-		}
-	return 0; 
+	char* file = firstArgs[0];
+	int fd = open(file, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+	close(1);
+	dup(fd);
+	close(fd); 
+	execvp(secondArgs[0], secondArgs); 
+	return -1; 
 
 }
 
@@ -83,7 +64,7 @@ runOr(char** firstArgs, char** secondArgs) {
 int
 runAnd(char** firstArgs, char** secondArgs) {
 	//run first one, run second only if A succeeded
-	//SecondArgs is left arg tree 
+	//SecondArgs is left arg tree
 	int cpid;
 	if ((cpid = fork())) {
 		int status;
@@ -178,17 +159,25 @@ execute(ast* ast) {
 	int cpid;
 	int new_pid;
 
-	if (strcmp(ast->op, "NO") == 0) {
-		if (strcmp(*ast->val, "exit") == 0) {
-			exit(0);
-		}
-
-		if (strcmp(*ast->val, "cd") == 0) {
-			chdir(ast->val[1]);
-		}
+	if (strcmp(ast->op, "NO")) {
+		char** junk = ast_eval(ast->right);
+		ast->val = junk; 
 	}
 
-	if (*ast->op == '&') {
+	//printf("%s\n", *ast->val);
+	//printf("%s\n", ast->op);
+
+	if (strcmp(*ast->val, "exit") == 0) {
+		exit(0);
+	}
+
+
+	if (strcmp(*ast->val, "cd") == 0) {
+		chdir(ast->val[1]);
+	}
+
+
+	else if (*ast->op == '&') {
 		int newpid;
 		if((newpid = fork())) {
 			char** first = ast_eval(ast->right);
@@ -200,50 +189,52 @@ execute(ast* ast) {
 		}
 	}
 
-
-	if ((cpid = fork())) {
-		int status;
-		waitpid(cpid, &status, 0);
-
+	else if (strcmp(ast->op, "||") == 0) {
+		runOr(ast_eval(ast->left), ast_eval(ast->right));
 	}
+
 	else {
-		if (strcmp(ast->op, "NO") == 0) {
-			ast->val[ast->len] = NULL; 
-			execvp(ast->val[0], ast->val);
-		}
+		//printf("we forkin\n"); 
+		if ((cpid = fork())) {
+			int status;
+			waitpid(cpid, &status, 0);
 
-		else if (*ast->op == ';') {
-			runSemi(ast_eval(ast->right), ast_eval(ast->left)); 
 		}
-
-		else if (*ast->op == '>') {
-			printToFile(ast_eval(ast->left), ast_eval(ast->right));
-		}
-
-		else if (*ast->op == '<') {
-			getFromFile(ast_eval(ast->left), ast_eval(ast->right));
-		}
-
-		else if (*ast->op == '&') {
-			if (strcmp(ast->op, "&&") == 0) {
-				runAnd(ast_eval(ast->left), ast_eval(ast->right));
+		else {
+			if (strcmp(ast->op, "NO") == 0) {
+				ast->val[ast->len] = NULL; 
+				execvp(ast->val[0], ast->val);
 			}
 
-			else {
-				runBackground(ast_eval(ast->left), ast_eval(ast->right));
-			}
-		}
-
-		else if (*ast->op == '|') {
-			if (strcmp(ast->op, "||") == 0) {
-				runOr(ast_eval(ast->left), ast_eval(ast->right));
+			else if (*ast->op == ';') {
+				runSemi(ast_eval(ast->right), ast_eval(ast->left)); 
 			}
 
-			else {
+			else if (*ast->op == '>') {
+				printToFile(ast_eval(ast->left), ast_eval(ast->right));
+			}
+
+			else if (*ast->op == '<') {
+				getFromFile(ast_eval(ast->left), ast_eval(ast->right));
+			}
+
+			else if (*ast->op == '&') {
+				if (strcmp(ast->op, "&&") == 0) {
+					runAnd(ast_eval(ast->left), ast_eval(ast->right));
+				}
+
+				else {
+					runBackground(ast_eval(ast->left), ast_eval(ast->right));
+				}
+			}
+
+			else if (*ast->op == '|') {
+
 				pipeIn(ast_eval(ast->left), ast_eval(ast->right));
 			}
-		}
 
+
+		}
 
 	}
 }
@@ -260,23 +251,9 @@ main(int argc, char* argv[])
         fgets(cmd, 256, stdin);
 	list* toks = tokenize(cmd);
 	ast* my_ast = parse(toks);
-	execute(my_ast); 
-    }
-    else {
-	char* file = argv[1];
-	
-	FILE *input = fopen(file, "r"); 
-	while (fgets(cmd, sizeof(cmd), input)) {
-	list* toks = tokenize(cmd);
-	ast* my_ast = parse(toks);
-	execute(my_ast); 
-	}
+	execute(my_ast);
 
-	fclose(input); 
-    }
-
-
-    while(1) {
+	while(1) {
 	    printf("nush$ ");
 	    char* input = fgets(cmd, 256, stdin);
 	    if (!input) {
@@ -288,6 +265,22 @@ main(int argc, char* argv[])
 	    ast* my_ast = parse(toks);
 	    execute(my_ast);
     }
+	
+    }
+    else {
+	char* file = argv[1];
+	
+	FILE *input = fopen(file, "r");
+	while (fgets(cmd, sizeof(cmd), input)) {
+		list* toks = tokenize(cmd);
+		ast* my_ast = parse(toks);
+		//print_ast(my_ast); 
+		execute(my_ast);
+	}
+
+	fclose(input); 
+    }
+
 
     return 0;
 }

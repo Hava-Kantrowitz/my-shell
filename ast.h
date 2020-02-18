@@ -19,6 +19,7 @@ ast* make_ast_value(list* vv);
 ast* make_ast_op(const char* op, ast* right, ast* left);
 void free_ast(ast* ast);
 char** ast_eval(ast* ast);
+char* ast_string(ast* ast); 
 void print_ast(ast* ast); 
 
 #endif

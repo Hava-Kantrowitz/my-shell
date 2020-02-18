@@ -12,29 +12,29 @@
 
 ast*
 make_ast_value(list* vv) { 
-	ast* ast = calloc(1, sizeof(ast));
-	ast->op = "NO";
-	ast->right = 0;
-	ast->left = 0;
-	ast->val = calloc(length(vv), sizeof(char*));
-	ast->len = length(vv);
+	ast* my_ast = calloc(1, sizeof(ast));
+	my_ast->op = "NO";
+	my_ast->right = 0;
+	my_ast->left = 0;
+	my_ast->val = calloc(length(vv), sizeof(char*));
+	my_ast->len = length(vv);
 	int i = 0;
 	for (; vv; vv = vv->tail) {
-		ast->val[i] = calloc(strlen(vv->head), sizeof(char));
-		ast->val[i] = strdup(vv->head);
+		my_ast->val[i] = calloc(strlen(vv->head), sizeof(char));
+		my_ast->val[i] = strdup(vv->head);
 		i++;
 	}
-	return ast;
+	return my_ast;
 }
 
 ast*
 make_ast_op(const char* op, ast* right, ast* left) {
-	ast* ast = calloc(1, sizeof(ast));
-	ast->op = strdup(op);
-	ast->right = right;
-	ast->left = left;
-	ast->len = 9000;
-	return ast;
+	ast* my_ast = calloc(1, sizeof(ast));
+	my_ast->op = strdup(op);
+	my_ast->right = right;
+	my_ast->left = left;
+	my_ast->len = 9000;
+	return my_ast;
 }
 
 void
